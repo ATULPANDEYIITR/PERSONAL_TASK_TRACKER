@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master Operations & Task Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg-main: #060908;
+      --bg-card: #0d1210;
+      --border-color: #172a21;
+      --accent-green: #10b981;
+      --accent-dim: #064e3b;
+    }
+    body { background-color: var(--bg-main); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-thumb { background: #133023; border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: #060908; }
+  </style>
+</head>
+<body class="text-emerald-100 min-h-screen flex flex-col antialiased">
+
+  <!-- Header -->
+  <header class="bg-[#090d0b]/95 backdrop-blur border-b border-emerald-950/80 sticky top-0 z-40 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-lg bg-emerald-950 border border-emerald-500/50 flex items-center justify-center font-bold text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+        &gt;_
+      </div>
+      <div>
+        <h1 class="text-sm font-bold tracking-wider text-emerald-400 uppercase">Personal Operations Command Terminal</h1>
+        <p class="text-[11px] text-emerald-600/90 font-mono">15 Heads · Academic · Tech Portfolio · Research · Companies</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-2.5">
+      <button onclick="openModal('taskModal')" class="bg-emerald-600 hover:bg-emerald-500 text-black text-xs font-bold px-3.5 py-2 rounded transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+        <i class="fa-solid fa-plus"></i> Add Task
+      </button>
+      <button onclick="openModal('categoryModal')" class="bg-[#0e1612] hover:bg-[#13201a] text-emerald-400 text-xs px-3 py-2 rounded transition-all border border-emerald-900/60 flex items-center gap-1.5">
+        <i class="fa-solid fa-folder-tree"></i> Manage Categories
+      </button>
+      <button onclick="reloadFromJSON()" class="bg-[#0e1612] hover:bg-[#13201a] text-emerald-500 text-xs px-2.5 py-2 rounded border border-emerald-900/60" title="Hard reload from data.json">
+        <i class="fa-solid fa-arrows-rotate"></i> Reset to 807
+      </button>
+      <button onclick="exportJSON()" class="bg-[#0e1612] hover:bg-[#13201a] text-emerald-500 text-xs px-2.5 py-2 rounded border border-emerald-900/60" title="Export Backup">
+        <i class="fa-solid fa-download"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="bg-[#070b09] border-b border-emerald-950/60 px-6 flex space-x-6 text-xs font-semibold overflow-x-auto">
+    <button onclick="switchView('tasksView')" id="nav-tasksView" class="py-3 border-b-2 border-emerald-500 text-emerald-400 flex items-center gap-2 whitespace-nowrap">
+      <i class="fa-solid fa-terminal"></i> All Tasks (<span id="taskCount">0</span>)
+    </button>
+    <button onclick="switchView('publicationsView')" id="nav-publicationsView" class="py-3 border-b-2 border-transparent text-emerald-600/70 hover:text-emerald-400 flex items-center gap-2 whitespace-nowrap">
+      <i class="fa-solid fa-file-lines"></i> Publications (<span id="pubCount">0</span>)
+    </button>
+    <button onclick="switchView('coursesExamsView')" id="nav-coursesExamsView" class="py-3 border-b-2 border-transparent text-emerald-600/70 hover:text-emerald-400 flex items-center gap-2 whitespace-nowrap">
+      <i class="fa-solid fa-graduation-cap"></i> Courses & Exams (<span id="examCount">0</span>)
+    </button>
+    <button onclick="switchView('companiesView')" id="nav-companiesView" class="py-3 border-b-2 border-transparent text-emerald-600/70 hover:text-emerald-400 flex items-center gap-2 whitespace-nowrap">
+      <i class="fa-solid fa-network-wired"></i> Companies & SMP (<span id="compCount">0</span>)
+    </button>
+  </nav>
+
+  <!-- Content Container -->
+  <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
+    
+    <!-- Tasks View -->
+    <section id="tasksView" class="space-y-4">
+      <div class="bg-[#0d1310] p-3.5 rounded-lg border border-emerald-950 flex flex-wrap gap-3 items-center justify-between">
+        <div class="flex-1 min-w-[240px]">
+          <input type="text" id="taskSearch" placeholder="filter by keyword, title, tag..." oninput="renderTasks()" class="w-full bg-[#070b09] border border-emerald-900/60 text-emerald-200 text-xs rounded px-3 py-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none"/>
+        </div>
+        <div class="flex flex-wrap gap-2.5">
+          <select id="headFilter" onchange="renderTasks()" class="bg-[#070b09] border border-emerald-900/60 text-emerald-300 text-xs rounded px-3 py-2 focus:outline-none">
+            <option value="ALL">All Categories (15 Heads)</option>
+          </select>
+          <select id="statusFilter" onchange="renderTasks()" class="bg-[#070b09] border border-emerald-900/60 text-emerald-300 text-xs rounded px-3 py-2 focus:outline-none">
+            <option value="ALL">All Statuses</option>
+            <option value="Todo">Todo</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Done">Done</option>
+          </select>
+        </div>
+      </div>
+      <div id="taskList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </section>
+
+    <!-- Publications View -->
+    <section id="publicationsView" class="hidden space-y-4">
+      <div class="bg-[#0d1310] rounded-lg border border-emerald-950 overflow-x-auto">
+        <table class="w-full text-left text-xs text-emerald-200">
+          <thead class="bg-[#070b09] uppercase text-[10px] tracking-wider text-emerald-500/80 border-b border-emerald-950">
+            <tr>
+              <th class="p-3">Title</th>
+              <th class="p-3">Association</th>
+              <th class="p-3">Proposal Due</th>
+              <th class="p-3">Full Paper Due</th>
+              <th class="p-3">Status</th>
+              <th class="p-3 text-right">Delete</th>
+            </tr>
+          </thead>
+          <tbody id="pubTableBody" class="divide-y divide-emerald-950/60"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Courses & Exams View -->
+    <section id="coursesExamsView" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-[#0d1310] p-4 rounded-lg border border-emerald-950">
+        <h2 class="text-xs font-bold text-emerald-400 mb-3 flex items-center gap-2"><i class="fa-solid fa-graduation-cap"></i> Ongoing Degrees & Courses</h2>
+        <div id="courseList" class="space-y-2"></div>
+      </div>
+      <div class="bg-[#0d1310] p-4 rounded-lg border border-emerald-950">
+        <h2 class="text-xs font-bold text-emerald-400 mb-3 flex items-center gap-2"><i class="fa-solid fa-calendar-check"></i> Competitive Exams & Certs</h2>
+        <div id="examList" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- Companies & SMP View -->
+    <section id="companiesView" class="hidden space-y-4">
+      <div id="companyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </section>
+  </main>
+
+  <!-- Add Task Modal -->
+  <div id="taskModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-[#0c120f] border border-emerald-900 w-full max-w-lg rounded-xl p-5 shadow-2xl space-y-3.5">
+      <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">// New Task Entry</h3>
+      <div>
+        <label class="text-[11px] text-emerald-600 block mb-1">Description</label>
+        <input type="text" id="modalTaskTitle" class="w-full bg-[#060908] border border-emerald-900/80 text-emerald-200 text-xs rounded p-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none" placeholder="Task summary..." />
+      </div>
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <label class="text-[11px] text-emerald-600 block mb-1">Category Head</label>
+          <select id="modalTaskHead" class="w-full bg-[#060908] border border-emerald-900/80 text-emerald-300 text-xs rounded p-2 focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="text-[11px] text-emerald-600 block mb-1">Sub Area</label>
+          <input type="text" id="modalTaskSubArea" class="w-full bg-[#060908] border border-emerald-900/80 text-emerald-200 text-xs rounded p-2 focus:outline-none" placeholder="e.g. Daily / Coding" />
+        </div>
+      </div>
+      <div>
+        <label class="text-[11px] text-emerald-600 block mb-1">Direct Link (Optional)</label>
+        <input type="url" id="modalTaskLink" class="w-full bg-[#060908] border border-emerald-900/80 text-emerald-200 text-xs rounded p-2 focus:outline-none" placeholder="https://" />
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('taskModal')" class="px-3 py-1.5 rounded bg-[#131b17] text-emerald-500 text-xs hover:bg-[#18241e]">Cancel</button>
+        <button onclick="saveTask()" class="px-3.5 py-1.5 rounded bg-emerald-600 text-black font-bold text-xs hover:bg-emerald-500">Commit Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Management Modal -->
+  <div id="categoryModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-[#0c120f] border border-emerald-900 w-full max-w-xl rounded-xl p-5 shadow-2xl space-y-4">
+      <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">// Category Head Management</h3>
+      
+      <!-- Add New Category -->
+      <div class="flex gap-2">
+        <input type="text" id="modalCatName" class="flex-1 bg-[#060908] border border-emerald-900/80 text-emerald-200 text-xs rounded px-3 py-1.5 focus:outline-none" placeholder="Add new head e.g. 16 Robotics & Edge AI" />
+        <button onclick="saveCategory()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs px-3.5 py-1.5 rounded">Add</button>
+      </div>
+
+      <!-- Existing Categories List with Delete Option -->
+      <div class="border-t border-emerald-950 pt-3">
+        <div class="text-[11px] text-emerald-600 mb-2 uppercase">Existing Heads (<span id="catCount">0</span>)</div>
+        <div id="categoryListManage" class="max-h-60 overflow-y-auto space-y-1.5 pr-1"></div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="closeModal('categoryModal')" class="px-3 py-1.5 rounded bg-[#131b17] text-emerald-400 text-xs hover:bg-[#18241e]">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

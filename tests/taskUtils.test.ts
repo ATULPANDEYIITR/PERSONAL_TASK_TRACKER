@@ -1,0 +1,3 @@
+import {describe,it,expect} from 'vitest';import {isOverdue,isToday,rankPriority} from '../src/utils/taskUtils';
+const base:any={id:'1',title:'x',status:'NOT_STARTED',priority:'HIGH',majorHead:'01',subArea:'x',dueDate:null,createdAt:'2026-01-01',updatedAt:'2026-01-01',deletedAt:null};
+describe('task utils',()=>{it('ranks priority',()=>expect(rankPriority('URGENT')).toBeGreaterThan(rankPriority('LOW')));it('detects overdue',()=>expect(isOverdue({...base,dueDate:'2020-01-01T00:00:00Z'},new Date('2026-01-01'))).toBe(true));it('detects today',()=>{const d=new Date('2026-09-27T10:00:00');expect(isToday({...base,dueDate:d.toISOString()},d)).toBe(true)})});
